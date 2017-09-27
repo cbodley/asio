@@ -19,12 +19,13 @@
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/system_timer.hpp>
+#include <boost/context/protected_fixedsize_stack.hpp>
 #include "unit_test.hpp"
 
 
-boost::coroutines::attributes with_attributes()
+boost::context::protected_fixedsize_stack with_stack_allocator()
 {
-  return boost::coroutines::attributes(65536);
+  return boost::context::protected_fixedsize_stack(65536);
 }
 
 struct counting_handler {
@@ -44,18 +45,18 @@ void test_spawn_function()
   BOOST_ASIO_CHECK(ioc.stopped());
   BOOST_ASIO_CHECK(1 == called);
 }
-#if 0 // XXX: spawn(Function&&, attributes) calls spawn(Handler&&, Function&&)
-void test_spawn_function_attributes()
+
+void test_spawn_function_stack_allocator()
 {
   boost::asio::io_context ioc;
   int called = 0;
   boost::asio::spawn(counting_handler(called),
-                     with_attributes());
+                     with_stack_allocator());
   BOOST_ASIO_CHECK(0 == ioc.run());
   BOOST_ASIO_CHECK(ioc.stopped());
   BOOST_ASIO_CHECK(1 == called);
 }
-#endif
+
 void test_spawn_handler()
 {
   boost::asio::io_context ioc;
@@ -68,7 +69,7 @@ void test_spawn_handler()
   BOOST_ASIO_CHECK(2 == called);
 }
 
-void test_spawn_handler_attributes()
+void test_spawn_handler_stack_allocator()
 {
   boost::asio::io_context ioc;
   typedef boost::asio::io_context::executor_type executor_type;
@@ -76,7 +77,7 @@ void test_spawn_handler_attributes()
   int called = 0;
   boost::asio::spawn(bind_executor(strand, counting_handler(called)),
                      counting_handler(called),
-                     with_attributes());
+                     with_stack_allocator());
   BOOST_ASIO_CHECK(1 == ioc.run());
   BOOST_ASIO_CHECK(ioc.stopped());
   BOOST_ASIO_CHECK(2 == called);
@@ -112,12 +113,12 @@ struct spawn_alloc_counting_handler {
   void operator()(boost::asio::basic_yield_context<T> y)
   {
     boost::asio::spawn(y, counting_handler(count),
-                       with_attributes());
+                       with_stack_allocator());
     ++count;
   }
 };
 
-void test_spawn_yield_context_attributes()
+void test_spawn_yield_context_stack_allocator()
 {
   boost::asio::io_context ioc;
   int called = 0;
@@ -139,13 +140,13 @@ void test_spawn_executor()
   BOOST_ASIO_CHECK(1 == called);
 }
 
-void test_spawn_executor_attributes()
+void test_spawn_executor_stack_allocator()
 {
   boost::asio::io_context ioc;
   int called = 0;
   boost::asio::spawn(ioc.get_executor(),
                      counting_handler(called),
-                     with_attributes());
+                     with_stack_allocator());
   BOOST_ASIO_CHECK(1 == ioc.run());
   BOOST_ASIO_CHECK(ioc.stopped());
   BOOST_ASIO_CHECK(1 == called);
@@ -163,14 +164,14 @@ void test_spawn_strand()
   BOOST_ASIO_CHECK(1 == called);
 }
 
-void test_spawn_strand_attributes()
+void test_spawn_strand_stack_allocator()
 {
   boost::asio::io_context ioc;
   typedef boost::asio::io_context::executor_type executor_type;
   int called = 0;
   boost::asio::spawn(boost::asio::strand<executor_type>(ioc.get_executor()),
                      counting_handler(called),
-                     with_attributes());
+                     with_stack_allocator());
   BOOST_ASIO_CHECK(1 == ioc.run());
   BOOST_ASIO_CHECK(ioc.stopped());
   BOOST_ASIO_CHECK(1 == called);
@@ -186,12 +187,12 @@ void test_spawn_execution_context()
   BOOST_ASIO_CHECK(1 == called);
 }
 
-void test_spawn_execution_context_attributes()
+void test_spawn_execution_context_stack_allocator()
 {
   boost::asio::io_context ioc;
   int called = 0;
   boost::asio::spawn(ioc, counting_handler(called),
-                     with_attributes());
+                     with_stack_allocator());
   BOOST_ASIO_CHECK(1 == ioc.run());
   BOOST_ASIO_CHECK(ioc.stopped());
   BOOST_ASIO_CHECK(1 == called);
@@ -245,17 +246,17 @@ BOOST_ASIO_TEST_SUITE
 (
   "spawn",
   BOOST_ASIO_TEST_CASE(test_spawn_function)
-  //BOOST_ASIO_TEST_CASE(test_spawn_function_attributes)
+  BOOST_ASIO_TEST_CASE(test_spawn_function_stack_allocator)
   BOOST_ASIO_TEST_CASE(test_spawn_handler)
-  BOOST_ASIO_TEST_CASE(test_spawn_handler_attributes)
+  BOOST_ASIO_TEST_CASE(test_spawn_handler_stack_allocator)
   BOOST_ASIO_TEST_CASE(test_spawn_yield_context)
-  BOOST_ASIO_TEST_CASE(test_spawn_yield_context_attributes)
+  BOOST_ASIO_TEST_CASE(test_spawn_yield_context_stack_allocator)
   BOOST_ASIO_TEST_CASE(test_spawn_executor)
-  BOOST_ASIO_TEST_CASE(test_spawn_executor_attributes)
+  BOOST_ASIO_TEST_CASE(test_spawn_executor_stack_allocator)
   BOOST_ASIO_TEST_CASE(test_spawn_strand)
-  BOOST_ASIO_TEST_CASE(test_spawn_strand_attributes)
+  BOOST_ASIO_TEST_CASE(test_spawn_strand_stack_allocator)
   BOOST_ASIO_TEST_CASE(test_spawn_execution_context)
-  BOOST_ASIO_TEST_CASE(test_spawn_execution_context_attributes)
+  BOOST_ASIO_TEST_CASE(test_spawn_execution_context_stack_allocator)
   BOOST_ASIO_TEST_CASE(test_spawn_timer)
   BOOST_ASIO_TEST_CASE(test_spawn_timer_destruct)
 )

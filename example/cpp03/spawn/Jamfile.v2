@@ -15,7 +15,6 @@ lib network ; # HAIKU
 exe server
   : echo_server.cpp
     /boost/context//boost_context
-    /boost/coroutine//boost_coroutine
     /boost/system//boost_system
     /boost/chrono//boost_chrono
   : <define>BOOST_ALL_NO_LIB=1
@@ -34,7 +33,6 @@ exe server
 exe parallel_grep
   : parallel_grep.cpp
     /boost/context//boost_context
-    /boost/coroutine//boost_coroutine
     /boost/system//boost_system
   : <define>BOOST_ALL_NO_LIB=1
     <threading>multi

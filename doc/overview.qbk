@@ -21,7 +21,7 @@
   * [link boost_asio.overview.core.handler_tracking Handler Tracking]
   * [link boost_asio.overview.core.concurrency_hint Concurrency Hints]
   * [link boost_asio.overview.core.coroutine Stackless Coroutines]
-  * [link boost_asio.overview.core.spawn Stackful Coroutines]
+  * [link boost_asio.overview.core.spawn Stackful Continuations]
   * [link boost_asio.overview.core.coroutines_ts Coroutines TS Support]
 * [link boost_asio.overview.networking Networking]
   * [link boost_asio.overview.networking.protocols TCP, UDP and ICMP]
@@ -67,7 +67,7 @@
 * [link boost_asio.overview.core.handler_tracking Handler Tracking]
 * [link boost_asio.overview.core.concurrency_hint Concurrency Hints]
 * [link boost_asio.overview.core.coroutine Stackless Coroutines]
-* [link boost_asio.overview.core.spawn Stackful Coroutines]
+* [link boost_asio.overview.core.spawn Stackful Continuations]
 * [link boost_asio.overview.core.coroutines_ts Coroutines TS Support]
 
 [include overview/basics.qbk]

@@ -50803,7 +50803,8 @@ This function destroys the timer, cancelling any outstanding asynchronous wait o
 [section:basic_yield_context basic_yield_context]
 
 
-Context object the represents the currently executing coroutine. 
+The context object represents the currently executing continuation
+(a continuation is a reified execution context).
 
 
   template<
@@ -50811,33 +50812,13 @@ Context object the represents the currently executing coroutine.
   class basic_yield_context
 
 
-[heading Types]
-[table
-  [[Name][Description]]
-
-  [
-
-    [[link boost_asio.reference.basic_yield_context.callee_type [*callee_type]]]
-    [The coroutine callee type, used by the implementation. ]
-  
-  ]
-
-  [
-
-    [[link boost_asio.reference.basic_yield_context.caller_type [*caller_type]]]
-    [The coroutine caller type, used by the implementation. ]
-  
-  ]
-
-]
-
 [heading Member Functions]
 [table
   [[Name][Description]]
 
   [
     [[link boost_asio.reference.basic_yield_context.basic_yield_context [*basic_yield_context]]]
-    [Construct a yield context to represent the specified coroutine. 
+    [Construct a yield context to represent the specified continuation. 
      [hr]
      Construct a yield context from another yield context type. ]
   ]
@@ -50849,12 +50830,12 @@ Context object the represents the currently executing coroutine.
   
 ]
 
-The [link boost_asio.reference.basic_yield_context `basic_yield_context`] class is used to represent the currently executing stackful coroutine. A [link boost_asio.reference.basic_yield_context `basic_yield_context`] may be passed as a handler to an asynchronous operation. For example:
+The [link boost_asio.reference.basic_yield_context `basic_yield_context`] class is used to represent the currently executing stackful continuation. A [link boost_asio.reference.basic_yield_context `basic_yield_context`] may be passed as a handler to an asynchronous operation. For example:
 
 
 
    template <typename Handler>
-   void my_coroutine(basic_yield_context<Handler> yield)
+   void my_continuation(basic_yield_context<Handler> yield)
    {
      ...
      std::size_t n = my_socket.async_read_some(buffer, yield);
@@ -50864,7 +50845,7 @@ The [link boost_asio.reference.basic_yield_context `basic_yield_context`] class 
 
 
 
-The initiating function (async\_read\_some in the above example) suspends the current coroutine. The coroutine is resumed when the asynchronous operation completes, and the result of the operation is returned. 
+The initiating function (async\_read\_some in the above example) suspends the current continuation. The continuation is resumed when the asynchronous operation completes, and the result of the operation is returned. 
 
 [heading Requirements]
 
@@ -50875,13 +50856,12 @@ The initiating function (async\_read\_some in the above example) suspends the cu
 [section:basic_yield_context basic_yield_context::basic_yield_context]
 
 [indexterm2 boost_asio.indexterm.basic_yield_context.basic_yield_context..basic_yield_context..basic_yield_context] 
-Construct a yield context to represent the specified coroutine. 
+Construct a yield context to represent the specified execution context. 
 
 
   ``[link boost_asio.reference.basic_yield_context.basic_yield_context.overload1 basic_yield_context]``(
-      const detail::weak_ptr< callee_type > & coro,
-      caller_type & ca,
-      Handler & handler);
+      Handler & handler,
+      const detail::weak_ptr< detail::continuation_context > & yc);
   ``  [''''&raquo;''' [link boost_asio.reference.basic_yield_context.basic_yield_context.overload1 more...]]``
 
 
@@ -50898,16 +50878,15 @@ Construct a yield context from another yield context type.
 [section:overload1 basic_yield_context::basic_yield_context (1 of 2 overloads)]
 
 
-Construct a yield context to represent the specified coroutine. 
+Construct a yield context to represent the specified execution context. 
 
 
   basic_yield_context(
-      const detail::weak_ptr< callee_type > & coro,
-      caller_type & ca,
-      Handler & handler);
+      Handler & handler,
+      const detail::weak_ptr< detail::continuation_context > & yc);
 
 
-Most applications do not need to use this constructor. Instead, the `spawn()` function passes a yield context as an argument to the coroutine function. 
+Most applications do not need to use this constructor. Instead, the `spawn()` function passes a yield context as an argument to the continuation function. 
 
 
 [endsect]
@@ -50935,72 +50914,6 @@ Requires that OtherHandler be convertible to Handler.
 [endsect]
 
 
-[section:callee_type basic_yield_context::callee_type]
-
-[indexterm2 boost_asio.indexterm.basic_yield_context.callee_type..callee_type..basic_yield_context] 
-The coroutine callee type, used by the implementation. 
-
-
-  typedef implementation_defined callee_type;
-
-
-
-When using Boost.Coroutine v1, this type is: 
-
-   typename coroutine<void()> 
-
-
-When using Boost.Coroutine v2 (unidirectional coroutines), this type is: 
-
-   push_coroutine<void> 
-
-
-
-
-[heading Requirements]
-
-['Header: ][^boost/asio/spawn.hpp]
-
-['Convenience header: ]None
-
-
-[endsect]
-
-
-
-[section:caller_type basic_yield_context::caller_type]
-
-[indexterm2 boost_asio.indexterm.basic_yield_context.caller_type..caller_type..basic_yield_context] 
-The coroutine caller type, used by the implementation. 
-
-
-  typedef implementation_defined caller_type;
-
-
-
-When using Boost.Coroutine v1, this type is: 
-
-   typename coroutine<void()>::caller_type 
-
-
-When using Boost.Coroutine v2 (unidirectional coroutines), this type is: 
-
-   pull_coroutine<void> 
-
-
-
-
-[heading Requirements]
-
-['Header: ][^boost/asio/spawn.hpp]
-
-['Convenience header: ]None
-
-
-[endsect]
-
-
-
 [section:operator_lb__rb_ basic_yield_context::operator\[\]]
 
 [indexterm2 boost_asio.indexterm.basic_yield_context.operator_lb__rb_..operator\[\]..basic_yield_context] 
@@ -51016,7 +50929,7 @@ By default, when a yield context is used with an asynchronous operation, a non-s
 
 
    template <typename Handler>
-   void my_coroutine(basic_yield_context<Handler> yield)
+   void my_continuation(basic_yield_context<Handler> yield)
    {
      ...
      std::size_t n = my_socket.async_read_some(buffer, yield[ec]);
@@ -103624,85 +103537,96 @@ Protected destructor to prevent deletion through this type.
 [section:spawn spawn]
 
 [indexterm1 boost_asio.indexterm.spawn..spawn] 
-Start a new stackful coroutine. 
+Start a new stackful continuation (on behalf of callcc()/continuation). 
 
 
-Start a new stackful coroutine, calling the specified handler when it completes. 
+Start a new stackful continuation (reified by callcc()), calling the specified handler when it completes. 
 
   template<
-      typename Function>
+      typename Function,
+      typename StackAllocator = boost::context::default_stack>
   void ``[link boost_asio.reference.spawn.overload1 spawn]``(
       Function && function,
-      const boost::coroutines::attributes & attributes = boost::coroutines::attributes());
+      StackAllocator && salloc = StackAllocator(),
+      typename enable_if< detail::is_stack_allocator< typename decay< StackAllocator >::type >::value >::type* = 0);
   ``  [''''&raquo;''' [link boost_asio.reference.spawn.overload1 more...]]``
 
   template<
       typename ``[link boost_asio.reference.Handler Handler]``,
-      typename Function>
+      typename Function,
+      typename StackAllocator = boost::context::default_stack>
   void ``[link boost_asio.reference.spawn.overload2 spawn]``(
       Handler && handler,
       Function && function,
-      const boost::coroutines::attributes & attributes = boost::coroutines::attributes(),
-      typename enable_if<!is_executor< typename decay< Handler >::type >::value &&!is_convertible< Handler &, execution_context & >::value >::type *  = 0);
+      StackAllocator && salloc = StackAllocator(),
+      typename enable_if<!is_executor< typename decay< Handler >::type >::value &&!is_convertible< Handler &, execution_context & >::value && detail::is_stack_allocator< typename decay< StackAllocator >::type >::value >::type* = 0);
   ``  [''''&raquo;''' [link boost_asio.reference.spawn.overload2 more...]]``
 
-Start a new stackful coroutine, inheriting the execution context of another. 
+Start a new stackful continuation (reified by callcc()), inheriting the execution context of another. 
 
   template<
       typename ``[link boost_asio.reference.Handler Handler]``,
-      typename Function>
+      typename Function,
+      typename StackAllocator = boost::context::default_stack>
   void ``[link boost_asio.reference.spawn.overload3 spawn]``(
       basic_yield_context< Handler > ctx,
       Function && function,
-      const boost::coroutines::attributes & attributes = boost::coroutines::attributes());
+      StackAllocator && salloc = StackAllocator(),
+      typename enable_if< detail::is_stack_allocator< typename decay< StackAllocator >::type >::value >::type* = 0);
   ``  [''''&raquo;''' [link boost_asio.reference.spawn.overload3 more...]]``
 
-Start a new stackful coroutine that executes on a given executor. 
+Start a new stackful continuation (reified by callcc()) that executes on a given executor. 
 
   template<
       typename Function,
-      typename ``[link boost_asio.reference.Executor1 Executor]``>
+      typename ``[link boost_asio.reference.Executor1 Executor]``,
+      typename StackAllocator = boost::context::default_stack>
   void ``[link boost_asio.reference.spawn.overload4 spawn]``(
       const Executor & ex,
       Function && function,
-      const boost::coroutines::attributes & attributes = boost::coroutines::attributes(),
-      typename enable_if< is_executor< Executor >::value >::type *  = 0);
+      StackAllocator && salloc = StackAllocator(),
+      typename enable_if< is_executor< Executor >::value && detail::is_stack_allocator< typename decay< StackAllocator >::type >::value >::type* = 0);
   ``  [''''&raquo;''' [link boost_asio.reference.spawn.overload4 more...]]``
 
-Start a new stackful coroutine that executes on a given strand. 
+Start a new stackful continuation (reified by callcc()) that executes on a given strand. 
 
   template<
       typename Function,
-      typename ``[link boost_asio.reference.Executor1 Executor]``>
+      typename ``[link boost_asio.reference.Executor1 Executor]``,
+      typename StackAllocator = boost::context::default_stack>
   void ``[link boost_asio.reference.spawn.overload5 spawn]``(
       const strand< Executor > & ex,
       Function && function,
-      const boost::coroutines::attributes & attributes = boost::coroutines::attributes());
+      StackAllocator && salloc = StackAllocator(),
+      typename enable_if< detail::is_stack_allocator< typename decay< StackAllocator >::type >::value >::type* = 0);
   ``  [''''&raquo;''' [link boost_asio.reference.spawn.overload5 more...]]``
 
-Start a new stackful coroutine that executes in the context of a strand. 
-
-  template<
-      typename Function>
-  void ``[link boost_asio.reference.spawn.overload6 spawn]``(
-      const boost::asio::io_context::strand & s,
-      Function && function,
-      const boost::coroutines::attributes & attributes = boost::coroutines::attributes());
-  ``  [''''&raquo;''' [link boost_asio.reference.spawn.overload6 more...]]``
-
-Start a new stackful coroutine that executes on a given execution context. 
+Start a new stackful continuation (reified by callcc()) that executes in the context of a strand. 
 
   template<
       typename Function,
-      typename ExecutionContext>
+      typename StackAllocator = boost::context::default_stack>
+  void ``[link boost_asio.reference.spawn.overload6 spawn]``(
+      const boost::asio::io_context::strand & s,
+      Function && function,
+      StackAllocator && salloc = StackAllocator(),
+      typename enable_if< detail::is_stack_allocator< typename decay< StackAllocator >::type >::value >::type* = 0);
+  ``  [''''&raquo;''' [link boost_asio.reference.spawn.overload6 more...]]``
+
+Start a new stackful continuation (reified by callcc()) that executes on a given execution context. 
+
+  template<
+      typename Function,
+      typename ExecutionContext,
+      typename StackAllocator = boost::context::default_stack>
   void ``[link boost_asio.reference.spawn.overload7 spawn]``(
       ExecutionContext & ctx,
       Function && function,
-      const boost::coroutines::attributes & attributes = boost::coroutines::attributes(),
-      typename enable_if< is_convertible< ExecutionContext &, execution_context & >::value >::type *  = 0);
+      StackAllocator && salloc = StackAllocator(),
+      typename enable_if< is_convertible< ExecutionContext &, execution_context & >::value && detail::is_stack_allocator< typename decay< StackAllocator >::type >::value >::type* = 0);
   ``  [''''&raquo;''' [link boost_asio.reference.spawn.overload7 more...]]``
 
-The `spawn()` function is a high-level wrapper over the Boost.Coroutine library. This function enables programs to implement asynchronous logic in a synchronous manner, as illustrated by the following example:
+The `spawn()` function is a high-level wrapper over the Boost.Context library. This function enables programs to implement asynchronous logic in a synchronous manner, as illustrated by the following example:
 
 
 
@@ -103744,17 +103668,19 @@ The `spawn()` function is a high-level wrapper over the Boost.Coroutine library.
 [section:overload1 spawn (1 of 7 overloads)]
 
 
-Start a new stackful coroutine, calling the specified handler when it completes. 
+Start a new execution context (with new stack), calling the specified handler when it completes. 
 
 
   template<
-      typename Function>
+      typename Function,
+      typename StackAllocator = boost::context::default_stack>
   void spawn(
       Function && function,
-      const boost::coroutines::attributes & attributes = boost::coroutines::attributes());
+      StackAllocator && salloc = StackAllocator(),
+      typename enable_if< detail::is_stack_allocator< typename decay< StackAllocator >::type >::value >::type* = 0);
 
 
-This function is used to launch a new coroutine.
+This function is used to launch a new execution context on behalf of callcc() and continuation.
 
 
 [heading Parameters]
@@ -103762,13 +103688,13 @@ This function is used to launch a new coroutine.
 
 [variablelist
   
-[[function][The coroutine function. The function must have the signature: 
+[[function][The continuation function. The function must have the signature: 
 ``
    void function(basic_yield_context<Handler> yield); 
 ``
 ]]
 
-[[attributes][Boost.Coroutine attributes used to customise the coroutine. ]]
+[[salloc][Boost.Context stack allocator used to create continuation's stack. ]]
 
 ]
 
@@ -103782,20 +103708,21 @@ This function is used to launch a new coroutine.
 [section:overload2 spawn (2 of 7 overloads)]
 
 
-Start a new stackful coroutine, calling the specified handler when it completes. 
+Start a new execution context (with new stack), calling the specified handler when it completes. 
 
 
   template<
       typename ``[link boost_asio.reference.Handler Handler]``,
-      typename Function>
+      typename Function,
+      typename StackAllocator = boost::context::default_stack>
   void spawn(
       Handler && handler,
       Function && function,
-      const boost::coroutines::attributes & attributes = boost::coroutines::attributes(),
-      typename enable_if<!is_executor< typename decay< Handler >::type >::value &&!is_convertible< Handler &, execution_context & >::value >::type *  = 0);
+      StackAllocator && salloc = StackAllocator(),
+      typename enable_if<!is_executor< typename decay< Handler >::type >::value &&!is_convertible< Handler &, execution_context & >::value && detail::is_stack_allocator< typename decay< StackAllocator >::type >::value >::type* = 0);
 
 
-This function is used to launch a new coroutine.
+This function is used to launch a new execution context on behalf of callcc() and continuation.
 
 
 [heading Parameters]
@@ -103803,19 +103730,19 @@ This function is used to launch a new coroutine.
 
 [variablelist
   
-[[handler][A handler to be called when the coroutine exits. More importantly, the handler provides an execution context (via the the handler invocation hook) for the coroutine. The handler must have the signature: 
+[[handler][A handler to be called when the continuation exits. More importantly, the handler provides an execution context (via the the handler invocation hook) for the continuation. The handler must have the signature: 
 ``
    void handler(); 
 ``
 ]]
 
-[[function][The coroutine function. The function must have the signature: 
+[[function][The continuation function. The function must have the signature: 
 ``
    void function(basic_yield_context<Handler> yield); 
 ``
 ]]
 
-[[attributes][Boost.Coroutine attributes used to customise the coroutine. ]]
+[[salloc][Boost.Context stack allocator used to create continuation's stack. ]]
 
 ]
 
@@ -103829,19 +103756,21 @@ This function is used to launch a new coroutine.
 [section:overload3 spawn (3 of 7 overloads)]
 
 
-Start a new stackful coroutine, inheriting the execution context of another. 
+Start a new execution context (with new stack), inheriting the execution context of another.
 
 
   template<
       typename ``[link boost_asio.reference.Handler Handler]``,
-      typename Function>
+      typename Function,
+      typename StackAllocator = boost::context::default_stack>
   void spawn(
       basic_yield_context< Handler > ctx,
       Function && function,
-      const boost::coroutines::attributes & attributes = boost::coroutines::attributes());
+      StackAllocator && salloc = StackAllocator(),
+      typename enable_if< detail::is_stack_allocator< typename decay< StackAllocator >::type >::value >::type* = 0);
 
 
-This function is used to launch a new coroutine.
+This function is used to launch a new execution context on behalf of callcc() and continuation.
 
 
 [heading Parameters]
@@ -103849,15 +103778,15 @@ This function is used to launch a new coroutine.
 
 [variablelist
   
-[[ctx][Identifies the current coroutine as a parent of the new coroutine. This specifies that the new coroutine should inherit the execution context of the parent. For example, if the parent coroutine is executing in a particular strand, then the new coroutine will execute in the same strand.]]
+[[ctx][Identifies the current execution context as a parent of the new continuation. This specifies that the new continuation should inherit the execution context of the parent. For example, if the parent continuation is executing in a particular strand, then the new continuation will execute in the same strand.]]
 
-[[function][The coroutine function. The function must have the signature: 
+[[function][The continuation function. The function must have the signature: 
 ``
    void function(basic_yield_context<Handler> yield); 
 ``
 ]]
 
-[[attributes][Boost.Coroutine attributes used to customise the coroutine. ]]
+[[salloc][Boost.Context stack allocator used to create continuation's stack. ]]
 
 ]
 
@@ -103871,20 +103800,21 @@ This function is used to launch a new coroutine.
 [section:overload4 spawn (4 of 7 overloads)]
 
 
-Start a new stackful coroutine that executes on a given executor. 
+Start a new execution context (with new stack) that executes on a given executor.
 
 
   template<
       typename Function,
-      typename ``[link boost_asio.reference.Executor1 Executor]``>
+      typename ``[link boost_asio.reference.Executor1 Executor]``,
+      typename StackAllocator = boost::context::default_stack>
   void spawn(
       const Executor & ex,
       Function && function,
-      const boost::coroutines::attributes & attributes = boost::coroutines::attributes(),
-      typename enable_if< is_executor< Executor >::value >::type *  = 0);
+      StackAllocator && salloc = StackAllocator(),
+      typename enable_if< is_executor< Executor >::value && detail::is_stack_allocator< typename decay< StackAllocator >::type >::value >::type* = 0);
 
 
-This function is used to launch a new coroutine.
+This function is used to launch a new execution context on behalf of callcc() and continuation.
 
 
 [heading Parameters]
@@ -103892,15 +103822,15 @@ This function is used to launch a new coroutine.
 
 [variablelist
   
-[[ex][Identifies the executor that will run the coroutine. The new coroutine is implicitly given its own strand within this executor.]]
+[[ex][Identifies the executor that will run the continuation. The new continuation is implicitly given its own strand within this executor.]]
 
-[[function][The coroutine function. The function must have the signature: 
+[[function][The continuation function. The function must have the signature: 
 ``
    void function(yield_context yield); 
 ``
 ]]
 
-[[attributes][Boost.Coroutine attributes used to customise the coroutine. ]]
+[[salloc][Boost.Context stack allocator used to create continuation's stack. ]]
 
 ]
 
@@ -103914,19 +103844,21 @@ This function is used to launch a new coroutine.
 [section:overload5 spawn (5 of 7 overloads)]
 
 
-Start a new stackful coroutine that executes on a given strand. 
+Start a new execution context (with new stack) that executes on a given strand.
 
 
   template<
       typename Function,
-      typename ``[link boost_asio.reference.Executor1 Executor]``>
+      typename ``[link boost_asio.reference.Executor1 Executor]``,
+      typename StackAllocator = boost::context::default_stack>
   void spawn(
       const strand< Executor > & ex,
       Function && function,
-      const boost::coroutines::attributes & attributes = boost::coroutines::attributes());
+      StackAllocator && salloc = StackAllocator(),
+      typename enable_if< detail::is_stack_allocator< typename decay< StackAllocator >::type >::value >::type* = 0);
 
 
-This function is used to launch a new coroutine.
+This function is used to launch a new execution context on behalf of callcc() and continuation.
 
 
 [heading Parameters]
@@ -103934,15 +103866,15 @@ This function is used to launch a new coroutine.
 
 [variablelist
   
-[[ex][Identifies the strand that will run the coroutine.]]
+[[ex][Identifies the strand that will run the continuation.]]
 
-[[function][The coroutine function. The function must have the signature: 
+[[function][The continuation function. The function must have the signature: 
 ``
    void function(yield_context yield); 
 ``
 ]]
 
-[[attributes][Boost.Coroutine attributes used to customise the coroutine. ]]
+[[salloc][Boost.Context stack allocator used to create continuation's stack. ]]
 
 ]
 
@@ -103956,18 +103888,20 @@ This function is used to launch a new coroutine.
 [section:overload6 spawn (6 of 7 overloads)]
 
 
-Start a new stackful coroutine that executes in the context of a strand. 
+Start a new execution context (with new stack) that executes in the context of a strand.
 
 
   template<
-      typename Function>
+      typename Function,
+      typename StackAllocator = boost::context::default_stack>
   void spawn(
       const boost::asio::io_context::strand & s,
       Function && function,
-      const boost::coroutines::attributes & attributes = boost::coroutines::attributes());
+      StackAllocator && salloc = StackAllocator(),
+      typename enable_if< detail::is_stack_allocator< typename decay< StackAllocator >::type >::value >::type* = 0);
 
 
-This function is used to launch a new coroutine.
+This function is used to launch a new execution context on behalf of callcc() and continuation.
 
 
 [heading Parameters]
@@ -103975,15 +103909,15 @@ This function is used to launch a new coroutine.
 
 [variablelist
   
-[[s][Identifies a strand. By starting multiple coroutines on the same strand, the implementation ensures that none of those coroutines can execute simultaneously.]]
+[[s][Identifies a strand. By starting multiple continuations on the same strand, the implementation ensures that none of those continuations can execute simultaneously.]]
 
-[[function][The coroutine function. The function must have the signature: 
+[[function][The continuation function. The function must have the signature: 
 ``
    void function(yield_context yield); 
 ``
 ]]
 
-[[attributes][Boost.Coroutine attributes used to customise the coroutine. ]]
+[[salloc][Boost.Context stack allocator used to create continuation's stack. ]]
 
 ]
 
@@ -103997,20 +103931,21 @@ This function is used to launch a new coroutine.
 [section:overload7 spawn (7 of 7 overloads)]
 
 
-Start a new stackful coroutine that executes on a given execution context. 
+Start a new stackful context (with new stack) that executes on a given execution context.
 
 
   template<
       typename Function,
-      typename ExecutionContext>
+      typename ExecutionContext,
+      typename StackAllocator = boost::context::default_stack>
   void spawn(
       ExecutionContext & ctx,
       Function && function,
-      const boost::coroutines::attributes & attributes = boost::coroutines::attributes(),
-      typename enable_if< is_convertible< ExecutionContext &, execution_context & >::value >::type *  = 0);
+      StackAllocator && salloc = StackAllocator(),
+      typename enable_if< is_convertible< ExecutionContext &, execution_context & >::value && detail::is_stack_allocator< typename decay< StackAllocator >::type >::value >::type* = 0);
 
 
-This function is used to launch a new coroutine.
+This function is used to launch a new execution context on behalf of callcc() and continuation.
 
 
 [heading Parameters]
@@ -104018,15 +103953,15 @@ This function is used to launch a new coroutine.
 
 [variablelist
   
-[[ctx][Identifies the execution context that will run the coroutine. The new coroutine is implicitly given its own strand within this execution context.]]
+[[ctx][Identifies the execution context that will run the continuation. The new continuation is implicitly given its own strand within this execution context.]]
 
-[[function][The coroutine function. The function must have the signature: 
+[[function][The continuation function. The function must have the signature: 
 ``
    void function(yield_context yield); 
 ``
 ]]
 
-[[attributes][Boost.Coroutine attributes used to customise the coroutine. ]]
+[[salloc][Boost.Context stack allocator used to create continuation's stack. ]]
 
 ]
 
@@ -121082,31 +121017,11 @@ The number of bytes written. If an error occurs, returns the total number of byt
 [section:yield_context yield_context]
 
 [indexterm1 boost_asio.indexterm.yield_context..yield_context] 
-Context object that represents the currently executing coroutine. 
+Context object that represents the currently executing continuation. 
 
 
   typedef basic_yield_context< unspecified > yield_context;
 
-
-[heading Types]
-[table
-  [[Name][Description]]
-
-  [
-
-    [[link boost_asio.reference.basic_yield_context.callee_type [*callee_type]]]
-    [The coroutine callee type, used by the implementation. ]
-  
-  ]
-
-  [
-
-    [[link boost_asio.reference.basic_yield_context.caller_type [*caller_type]]]
-    [The coroutine caller type, used by the implementation. ]
-  
-  ]
-
-]
 
 [heading Member Functions]
 [table
@@ -121114,7 +121029,7 @@ Context object that represents the currently executing coroutine.
 
   [
     [[link boost_asio.reference.basic_yield_context.basic_yield_context [*basic_yield_context]]]
-    [Construct a yield context to represent the specified coroutine. 
+    [Construct a yield context to represent the specified continuation. 
      [hr]
      Construct a yield context from another yield context type. ]
   ]
@@ -121126,12 +121041,12 @@ Context object that represents the currently executing coroutine.
   
 ]
 
-The [link boost_asio.reference.basic_yield_context `basic_yield_context`] class is used to represent the currently executing stackful coroutine. A [link boost_asio.reference.basic_yield_context `basic_yield_context`] may be passed as a handler to an asynchronous operation. For example:
+The [link boost_asio.reference.basic_yield_context `basic_yield_context`] class is used to represent the currently executing stackful continuation. A [link boost_asio.reference.basic_yield_context `basic_yield_context`] may be passed as a handler to an asynchronous operation. For example:
 
 
 
    template <typename Handler>
-   void my_coroutine(basic_yield_context<Handler> yield)
+   void my_continuation(basic_yield_context<Handler> yield)
    {
      ...
      std::size_t n = my_socket.async_read_some(buffer, yield);
@@ -121141,7 +121056,7 @@ The [link boost_asio.reference.basic_yield_context `basic_yield_context`] class 
 
 
 
-The initiating function (async\_read\_some in the above example) suspends the current coroutine. The coroutine is resumed when the asynchronous operation completes, and the result of the operation is returned. 
+The initiating function (async\_read\_some in the above example) suspends the current continuation. The continuation is resumed when the asynchronous operation completes, and the result of the operation is returned. 
 
 
 [heading Requirements]
