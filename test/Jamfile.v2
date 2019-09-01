@@ -26,6 +26,8 @@ project
     <library>/boost/date_time//boost_date_time
     <library>/boost/system//boost_system
     <library>/boost/chrono//boost_chrono
+    <library>/boost/coroutine//boost_coroutine
+    <library>/boost/context//boost_context
     <library>/boost/regex//boost_regex
     <define>BOOST_ALL_NO_LIB=1
     <threading>multi
@@ -176,6 +178,8 @@ test-suite "asio" :
   [ run signal_set.cpp : : : $(USE_SELECT) : signal_set_select ]
   [ run socket_base.cpp ]
   [ run socket_base.cpp : : : $(USE_SELECT) : socket_base_select ]
+  [ run spawn.cpp ]
+  [ run spawn.cpp : : : $(USE_SELECT) : spawn_select ]
   [ link steady_timer.cpp ]
   [ link steady_timer.cpp : $(USE_SELECT) : steady_timer_select ]
   [ run strand.cpp ]
